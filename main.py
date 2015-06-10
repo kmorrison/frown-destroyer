@@ -5,6 +5,7 @@ import flask
 from flask import Flask
 from google.appengine.api import users
 
+import models
 from util import login
 
 
@@ -15,12 +16,24 @@ app = Flask(__name__)
 APP_NAME = 'frown_destroyer'
 
 
+def get_unseen_post_and_mark_as_seen():
+    posts = models.Post.query().filter(models.Post.is_seen == False).fetch(limit=1)
+    if not posts:
+        return None
+    post = posts[0]
+    post.is_seen = True
+    post.put()
+    return post
+
+
 @app.route('/')
 def home():
     """Return a friendly HTTP greeting."""
+    unseen_post = get_unseen_post_and_mark_as_seen()
     return flask.render_template(
         'home.html',
         title=APP_NAME,
+        post=unseen_post,
     )
 
 
