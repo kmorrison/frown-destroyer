@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <form method="POST" action="/admin/post">
+      {{ form.csrf_token }}
+      {{ form.link(class='form-control', placeholder='Link') }}
+      {{ form.comments(class='form-control', placeholder='Comments') }}
+      <input type="submit" value="Enter" class="btn btn-primary">
+    </form>
+
+<table class="table table-striped admin-content">
+  {% for post in posts %}
+    <tr>
+      <td class='row-link'><a href="{{post.link}}">{{post.link}}</a></td>
+      <td class='row-comments'>{{post.comments}}</td>
+      <td class='row-seen'>{{post.is_seen}}</td>
+    </tr>
+  {% endfor %}
+</table>
+{% endblock %}

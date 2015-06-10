@@ -3,6 +3,14 @@
 # Import the Flask Framework
 import flask
 from flask import Flask
+from flask_wtf import Form
+from wtforms import Field
+from wtforms import StringField
+from wtforms import TextAreaField
+from wtforms.validators import DataRequired
+from wtforms.validators import URL
+from wtforms.validators import Optional
+from wtforms.widgets import TextInput
 from google.appengine.api import users
 
 import models
@@ -35,6 +43,41 @@ def home():
         title=APP_NAME,
         post=unseen_post,
     )
+
+class PostForm(Form):
+    link = StringField('Link', [DataRequired(), URL()])
+    comments = TextAreaField('Comments', [Optional()])
+
+
+@app.route('/admin')
+@login.login_required
+@login.admin_required
+def admin():
+    post_form = PostForm()
+    posts = models.Post.query().order(models.Post.time_created).fetch()
+    return flask.render_template(
+        'admin.html',
+        title=admin,
+        form=post_form,
+        posts=posts,
+    )
+
+@app.route('/admin/post', methods=('POST',))
+@login.login_required
+@login.admin_required
+def admin_post():
+    form = PostForm()
+    if not form.validate_on_submit():
+        print form.errors
+    else:
+        post = models.Post(
+            link=form.link.data,
+            comments=form.comments.data,
+            is_seen=False,
+        )
+        post.put()
+
+    return flask.redirect(flask.url_for('admin'))
 
 
 @app.route('/me')
