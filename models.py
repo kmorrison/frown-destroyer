@@ -5,3 +5,4 @@ class Post(ndb.Model):
     link = ndb.StringProperty()
     comments = ndb.TextProperty()
     is_seen = ndb.BooleanProperty()
+    is_embeddable = ndb.BooleanProperty(default=False)

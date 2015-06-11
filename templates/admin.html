@@ -5,6 +5,7 @@
       {{ form.csrf_token }}
       {{ form.link(class='form-control', placeholder='Link') }}
       {{ form.comments(class='form-control', placeholder='Comments') }}
+      <label for='can_embed'>Can Embed</label>{{ form.can_embed(class='form-control', placeholder='Can Embed') }}
       <input type="submit" value="Enter" class="btn btn-primary">
     </form>
 

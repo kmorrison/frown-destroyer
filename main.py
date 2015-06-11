@@ -5,6 +5,7 @@ import flask
 from flask import Flask
 from flask_wtf import Form
 from wtforms import Field
+from wtforms import BooleanField
 from wtforms import StringField
 from wtforms import TextAreaField
 from wtforms.validators import DataRequired
@@ -14,6 +15,7 @@ from wtforms.widgets import TextInput
 from google.appengine.api import users
 
 import models
+import secret
 from util import login
 
 
@@ -28,6 +30,7 @@ def _mark_post_as_seen(post):
     post.is_seen = True
     post.put()
 
+
 def _httpsify_link(link):
     if not link.startswith('http'):
         link = 'https://' + link
@@ -35,15 +38,16 @@ def _httpsify_link(link):
 
 
 def get_unseen_post_and_mark_as_seen():
-    posts = models.Post.query().filter(models.Post.is_seen == False).fetch(limit=1)
+    posts = models.Post.query().filter(models.Post.is_seen == False).order(-models.Post.time_created).fetch(limit=1)
     if not posts:
         return None
     post = posts[0]
-    #_mark_post_as_seen(post)
+    _mark_post_as_seen(post)
     return post
 
 
 @app.route('/')
+@login.admin_required
 def home():
     """Return a friendly HTTP greeting."""
     unseen_post = get_unseen_post_and_mark_as_seen()
@@ -57,6 +61,7 @@ def home():
 class PostForm(Form):
     link = StringField('Link', [DataRequired(), URL()])
     comments = TextAreaField('Comments', [Optional()])
+    can_embed = BooleanField('Can Embed?')
 
 
 @app.route('/admin')
@@ -84,21 +89,13 @@ def admin_post():
         post = models.Post(
             link=link,
             comments=form.comments.data,
+            is_embeddable=form.can_embed.data,
             is_seen=False,
         )
         post.put()
 
     return flask.redirect(flask.url_for('admin'))
 
-
-@app.route('/me')
-@login.login_required
-def me():
-    return flask.render_template(
-        'me.html',
-        title=APP_NAME,
-        user=users.get_current_user(),
-    )
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -111,4 +108,4 @@ def page_not_found(e):
     """Return a custom 500 error."""
     return 'Sorry, unexpected error: {}'.format(e), 500
 
-app.secret_key = 'Change me.'
+app.secret_key = secret.secret_key

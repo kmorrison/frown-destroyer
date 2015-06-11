@@ -4,7 +4,13 @@
     <div id="post-div">
         {% if post %}
             <div class="well">
+            {% if post.is_embeddable %}
+                <div class="embed-responsive embed-responsive-16by9">
+                  <iframe class="embed-responsive-item" src="{{post.link}}"></iframe>
+                </div>
+            {% else %}
                 <a href="{{ post.link }}">{{post.link}}</a>
+            {% endif %}
             </div>
             {% if post.comments %}
                 <div class="well">
@@ -12,7 +18,7 @@
                 </div>
             {% endif %}
         {% else %}
-            Sorry, you've seen everything!
+            <p class="well">Sorry, you've seen everything!</p>
         {% endif %}
     </div>
     <div id="reloader">
