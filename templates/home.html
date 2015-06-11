@@ -3,7 +3,14 @@
 {% block content %}
     <div id="post-div">
         {% if post %}
-            {{ post.link }}
+            <div class="well">
+                <a href="{{ post.link }}">{{post.link}}</a>
+            </div>
+            {% if post.comments %}
+                <div class="well">
+                    {{ post.comments }}
+                </div>
+            {% endif %}
         {% else %}
             Sorry, you've seen everything!
         {% endif %}

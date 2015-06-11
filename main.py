@@ -21,7 +21,17 @@ app = Flask(__name__)
 # Note: We don't need to call run() since our application is embedded within
 # the App Engine WSGI application server.
 
-APP_NAME = 'frown_destroyer'
+APP_NAME = 'Frown Destroyer'
+
+
+def _mark_post_as_seen(post):
+    post.is_seen = True
+    post.put()
+
+def _httpsify_link(link):
+    if not link.startswith('http'):
+        link = 'https://' + link
+    return link
 
 
 def get_unseen_post_and_mark_as_seen():
@@ -29,8 +39,7 @@ def get_unseen_post_and_mark_as_seen():
     if not posts:
         return None
     post = posts[0]
-    post.is_seen = True
-    post.put()
+    #_mark_post_as_seen(post)
     return post
 
 
@@ -43,6 +52,7 @@ def home():
         title=APP_NAME,
         post=unseen_post,
     )
+
 
 class PostForm(Form):
     link = StringField('Link', [DataRequired(), URL()])
@@ -57,7 +67,7 @@ def admin():
     posts = models.Post.query().order(models.Post.time_created).fetch()
     return flask.render_template(
         'admin.html',
-        title=admin,
+        title=APP_NAME + ' Admin',
         form=post_form,
         posts=posts,
     )
@@ -70,8 +80,9 @@ def admin_post():
     if not form.validate_on_submit():
         print form.errors
     else:
+        link = _httpsify_link(form.link.data)
         post = models.Post(
-            link=form.link.data,
+            link=link,
             comments=form.comments.data,
             is_seen=False,
         )
